@@ -1,0 +1,7 @@
+"","method","benchmark","avg"
+"1","Wordfish","CMP",0.311111111111111
+"2","Wordscores","CMP",0.775
+"3","Wordfish","Experts",0.311111111111111
+"4","Wordscores","Experts",0.8
+"5","Wordfish","Voters",0.455555555555555
+"6","Wordscores","Voters",0.8125
