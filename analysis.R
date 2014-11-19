@@ -5,9 +5,8 @@ rm(list = ls())
 
 #load packages
 require(tm)
-require(RWeka)
 require(rJava)
-require(Snowball)
+require(SnowballC)
 require(austin)
 require(ggplot2)
 require(foreign)
@@ -15,7 +14,7 @@ require(plyr)
 require(stargazer)
 
 #set working dir here
-setwd("C:\Users\fh\Documents\GitHub\ccv")
+setwd("C:/Users/fh/Documents/GitHub/ccv")
 
 ################################################################
 # GERMANY
@@ -86,7 +85,9 @@ germandat<-as.data.frame(matrix(NA,ncol=9,nrow=ncol(germany_wfms)))
 names(germandat)<-c("party","yr","ws","ws.se","wf","wf.se","cmp","exp","vot")
 
 ### Wordfish
+gwf.t0<-proc.time()
 gwf <- wordfish(germany_wfms)
+gwf.time<-proc.time()-gwf.t0
 summary(gwf)
 germandat$wf<-gwf$theta
 germandat$wf.se<-gwf$se.theta
@@ -129,7 +130,9 @@ colnames(ref)
 # The order that you see here should be the one used for the scores in the classic.wordscores
 
 ## First reference text 10, second 12, etc as in here. colnames(ref) output guides you to see in what order do you find the texts:
+gws.t0<-proc.time()
 ws <- classic.wordscores(ref, scores = c(14,17.5,8.8,3.9,9.4))
+gws.time<-proc.time()-gws.t0
 
 ## EDIT AS NEEDED.
 
@@ -184,7 +187,7 @@ germancor.plot$benchmark<-recode(germancor.plot$benchmark,"'cmp'='CMP';'exp'='Ex
 table(germancor.plot$benchmark)
 
 #the sign is flipped for Wordfish, so we need to fix that
-germancor.plot$value[germancor.plot$method=="Wordfish"]<-germancor.plot$value[germancor.plot$method=="Wordfish"]*-1
+germancor.plot$value[germancor.plot$method=="Wordfish"]<-germancor.plot$value[germancor.plot$method=="Wordfish"]
 
 #data frame for avg correlations
 germancor.avgs<-as.data.frame(aggregate(germancor.plot$value,by=list(germancor.plot$method,germancor.plot$benchmark),FUN=mean,na.rm=T))
@@ -226,7 +229,11 @@ lgermandat<-as.data.frame(matrix(NA,ncol=9,nrow=ncol(lgermany_wfms)))
 names(lgermandat)<-c("party","yr","ws","ws.se","wf","wf.se","cmp","exp","vot")
 
 ### Wordfish
+lgwf.t0<-proc.time()
 lgwf <- wordfish(lgermany_wfms)
+lgwf.time<-proc.time()-lgwf.t0
+
+
 summary(lgwf)
 lgermandat$wf<-lgwf$theta
 lgermandat$wf.se<-lgwf$se.theta
@@ -269,7 +276,9 @@ colnames(ref)
 # The order that you see here should be the one used for the scores in the classic.wordscores
 
 ## First reference text 10, second 12, etc as in here. colnames(ref) output guides you to see in what order do you find the texts:
+lgws.t0<-proc.time()
 ws <- classic.wordscores(ref, scores = c(14,17.5,8.8,3.9,9.4))
+lgws.time<-proc.time()-lgws.t0
 
 ## EDIT AS NEEDED.
 
@@ -354,13 +363,13 @@ dev.off()
 pol.text.corp <- Corpus(DirSource("Denmark", encoding = "UTF-8"),
                         readerControl = list(language = "da")) # Disregard error messageget
 
-pol.text.corp <- tm_map(pol.text.corp, 
-                        function(x) iconv(enc2utf8(x), sub = "byte"))  
+#pol.text.corp <- tm_map(pol.text.corp, function(x) iconv(enc2utf8(x), sub = "byte"))  
+
 pol.text.corp <- tm_map(pol.text.corp, stripWhitespace)
 pol.text.corp <- tm_map(pol.text.corp, removePunctuation)
 pol.text.corp <- tm_map(pol.text.corp, removeNumbers)
 
-pol.text.corp <- tm_map(pol.text.corp, tolower)
+pol.text.corp <- tm_map(pol.text.corp, content_transformer(tolower))
 pol.text.corp <- tm_map(pol.text.corp, function(x) removeWords(x,  stopwords("da")))
 
 #stemming takes a while - log time to see how long exactly
@@ -391,7 +400,11 @@ ests<-read.dta("danishests.dta")
 names(table(toupper(ests$party)))
 
 ### Wordfish
+dwf.t0<-proc.time()
 dwf <- wordfish(denmark_wfms)
+dwf.time<-proc.time()-dwf.t0
+
+
 summary(dwf)
 danishdat$wf<-dwf$theta
 danishdat$wf.se<-dwf$se.theta
@@ -446,7 +459,12 @@ colnames(ref)
 
 ## First reference text 10, second 12, etc as in here. colnames(ref) output guides you to see in what order do you find the texts:
 
+dws.t0<-proc.time()
 ws <- classic.wordscores(ref, scores = c(6,0,0,7,7.5,2,8,9,3,3,7,5,5,10,8,1,10))
+dws.time<-proc.time()-dws.t0
+
+#write out time estimates
+write.table(timedat<-c(gwf=gwf.time,gws=gws.time,dwf=dwf.time,dws=dws.time),file="timestamps.txt",sep=",")
 
 ## EDIT AS NEEDED.
 
